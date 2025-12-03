@@ -12,14 +12,14 @@ from telegram.ext import (
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-TOKEN = '***'  # Замените на свой токен
+TOKEN = '8510780024:AAGsBRszZHr1ruw_l1Mje9g2wdkzfqRp9MM'  # Замените на свой токен
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Главное меню
     keyboard = [
         ["Записаться на консультацию", "Расписание"],
         ["Информация о техникуме", "Помощь"],
-        ["Связь с администрацией"]
+        ["Связь с администрацией", "Оставить отзыв"]  # Добавлена кнопка "Оставить отзыв"
     ]
 
     reply_markup = ReplyKeyboardMarkup(keyboard, resize_keyboard=True)
@@ -56,15 +56,23 @@ async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif text == "Помощь":
         await update.message.reply_text("Я могу помочь вам с записью на консультацию, предоставить расписание и информацию о техникуме.")
 
+    elif text == "Оставить отзыв":  # Обработка кнопки "Оставить отзыв"
+        await update.message.reply_text("Пожалуйста, напишите ваш отзыв:")
+        context.user_data['waiting_for_feedback'] = True  # Устанавливаем флаг, что ждем отзыв
+
     else:
-        await update.message.reply_text("Я не понимаю эту команду. Пожалуйста, используйте кнопки меню.")
+        if context.user_data.get('waiting_for_feedback'):
+             await update.message.reply_text("Спасибо за ваш отзыв!")
+             context.user_data['waiting_for_feedback'] = False  # Сбрасываем флаг
+        else:
+            await update.message.reply_text("Я не понимаю эту команду. Пожалуйста, используйте кнопки меню.")
 
 async def handle_inline_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
 
     if query.data == "consult_ivanov":
-        await query.edit_message_text("Вы выбрали консультацию у Иванова И.И.\n(Короче сталкер, идешь на второй этаж и там буджет сидоров, берешь у него бутылку водки и идешь в подвал сдавать экзамен у Иванова)")
+        await query.edit_message_text("Вы выбрали консультацию у Иванова И.И.\n(Короче сталкер, идешь на второй этаж и там будет сидоров, берешь у него бутылку водки и идешь в подвал сдавать экзамен у Иванова)")
     elif query.data == "consult_petrov":
         await query.edit_message_text("Вы выбрали консультацию у Петрова П.П.\n(Артем, ты меня слышишь? Мутанты уж слишком разбушевались в метро в последнии месяцы, короче идешь на станцию фашистов и там будет этот самый Петрович")
     elif query.data == "consult_sidorova":
